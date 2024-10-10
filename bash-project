@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# script to change permission of file 
+
+# Prompt the user to enter a file name
+
+# File variable to store file.txt location 
+
+# to check the file we want to change 
+
+# If the file exists, print the following information:
+
+  # if the file doesn't exist, print an error message
+
+# to remove  write permission of other and group of file
+
+# File variable to store file.txt location 
+
+#to check if the permission are removed
