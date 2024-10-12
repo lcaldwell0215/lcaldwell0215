@@ -1,19 +1,31 @@
 #!/bin/bash
 
-# script to change permission of file 
-
+# script to show the permission of a file!
+ 
 # Prompt the user to enter a file name
-
-# File variable to store file.txt location 
-
-# to check the file we want to change 
-
+read -p "Enter a file name: " file
+ 
 # If the file exists, print the following information:
-
+   if [ -e "$file" ]; then
+    echo "File Information:"
+    echo "-----------------"
+    echo "File: $file"
+ 
+    size=$(stat -c %s "$file")
+    echo "Size: $size"
+ 
+   # perms= $(stat -c %A "$file")
+    # echo "Permissions: $perms"
+ 
+    created=$(stat -c %w "$file")
+    echo "Created: $created"
+ 
+    modified=$(stat -c %y "$file")
+    echo "Modified: $modified"
+  else
   # if the file doesn't exist, print an error message
+    echo "Error: File '$file' does not exist."
+  fi
 
-# to remove  write permission of other and group of file
-
-# File variable to store file.txt location 
-
-#to check if the permission are removed
+# display the files permissions
+ls -l | grep -E "^[-dls]" | awk '{print $file}'
