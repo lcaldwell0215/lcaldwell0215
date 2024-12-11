@@ -1,1 +1,77 @@
+import argparse
+import pandas as pd
+import sqlite3
+import re
+
+def clean_csv(input_file, output_file, save_to_db=False, db_file=None):
+    """
+    Clean the CSV file by removing duplicates, correcting formatting issues, 
+    and saving a cleaned version either to another CSV or to a SQLite database.
+    """
+    # Read the CSV file into a DataFrame
+    try:
+        df = pd.read_csv(input_file)
+    except FileNotFoundError:
+        print(f"Error: The file {input_file} was not found!")
+        return
+
+    # Clean data (remove leading/trailing spaces in all string columns)
+    for column in df.columns:
+        if df[column].dtype == 'object':  # Check if column contains strings
+            df[column] = df[column].str.strip()
+
+    # Remove duplicate rows based on all columns
+    df = df.drop_duplicates()
+
+    # Apply a regular expression to clean unwanted characters in string columns
+        # Example: Remove non-alphanumeric characters from string columns
+    for column in df.columns:
+        if df[column].dtype == 'object':
+            df[column] = df[column].apply(lambda x: re.sub(r'[^a-zA-Z0-9\s]', '', str(x)))
+
+    # Step 6: Optionally handle missing values (replace NaN with empty strings or a default value)
+    df = df.fillna('')  # Customize this line if you want a different value for NaN
+
+    if save_to_db:
+        # Step 7: Save cleaned data to SQLite database
+        conn = sqlite3.connect(db_file)
+        df.to_sql('cleaned_data', conn, if_exists='replace', index=False)
+        conn.close()
+        print(f"Your data has been cleaned and saved to SQLite database: {db_file}")
+    else:
+        # Step 8: Save cleaned data to CSV
+        df.to_csv(output_file, index=False)
+        print(f"Your data has been cleaned and saved to {output_file}")
+
+def main():
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description="Clean up messy CSV data by removing duplicates, correcting formatting issues, and saving cleaned data.")
+    
+    # Define arguments
+    parser.add_argument('input_file', type=str, help="Input CSV file to clean")
+    parser.add_argument('-o', '--output', type=str, default='cleaned_data.csv', help="Output file to save cleaned data (default: 'cleaned_data.csv')")
+    parser.add_argument('-d', '--database', type=str, help="SQLite database file to save cleaned data instead of CSV")
+    parser.add_argument('-v', '--verbose', action='store_true', help="Enable verbose output")
+    
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Handle invalid arguments
+    if not args.input_file:
+        print("Error: Input file is required. Use -h for help.")
+        return
+
+    # Verbose output
+    if args.verbose:
+        print(f"Input file: {args.input_file}")
+        print(f"Output file: {args.output}")
+
+    # Call the clean_csv function based on the arguments
+    if args.database:
+        clean_csv(args.input_file, args.output, save_to_db=True, db_file=args.database)
+    else:
+        clean_csv(args.input_file, args.output)
+
+if __name__ == "__main__":
+    main()
 
